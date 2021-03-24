@@ -1,14 +1,18 @@
 package com.rchoyhughes.computermonitor;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import android.os.Handler;
@@ -19,6 +23,7 @@ import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -45,13 +50,27 @@ public class MainActivity extends AppCompatActivity {
     private Handler timeHandler;
     private Handler dataHandler;
     private Handler OSHandler;
+    private Handler responsiveHandler;
+    private Handler movementHandler;
 
     private String[] data;
+    private int file_num;
+    private boolean isUnresponsive;
+
+    private boolean headedRight;
+    private boolean headedDown;
+    private int x_coordinate;
+    private int y_coordinate;
+    private static final int X_Shift = 8;
+    private static final int Y_Shift = 4;
+    private static final int Max_X = 232;
+    private static final int Max_Y = 156;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         TimeView = (TextView) findViewById(R.id.timeView);
         DateView = (TextView) findViewById(R.id.dateView);
@@ -71,15 +90,27 @@ public class MainActivity extends AppCompatActivity {
                 new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                 1);
 
-        timeHandler = new Handler();
-        timeRepeatTask();
+        file_num = 0;
+        isUnresponsive = false;
 
         dataHandler = new Handler();
         dataRepeatTask();
 
+        timeHandler = new Handler();
+        timeRepeatTask();
+
         OSHandler = new Handler();
         updateOSRepeatTask();
 
+        responsiveHandler = new Handler();
+        checkResponsiveRepeatTask();
+
+        headedDown = true;
+        headedRight = true;
+        x_coordinate = 0;
+        y_coordinate = 0;
+        movementHandler = new Handler();
+        moveUIRepeatTask();
     }
 
     @Override
@@ -98,7 +129,6 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
                     // permission was granted, yay! Do the
                     // contacts-related task you need to do.
                 } else {
@@ -106,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
                     // permission denied, boo! Disable the
                     // functionality that depends on this permission.
                     Toast.makeText(MainActivity.this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+                    finish();
+                    System.exit(1);
                 }
             }
 
@@ -133,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Shows the system bars by removing all the flags
-// except for the ones that make the content appear under the system bars.
+    // except for the ones that make the content appear under the system bars.
     private void showSystemUI() {
         View decorView = getWindow().getDecorView();
         decorView.setSystemUiVisibility(
@@ -142,25 +174,114 @@ public class MainActivity extends AppCompatActivity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
     }
 
-    /*public void ChangeLogo(View view) {
-        if (isMac) {
-            LogoImage.setImageResource(R.drawable.windows);
-            isMac = false;
-        } else {
-            LogoImage.setImageResource(R.drawable.macos);
-            isMac = true;
-        }
-    }*/
+    private void moveUIRepeatTask() { movementUpdater.run(); }
 
-    private void updateTime()
+    Runnable movementUpdater = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                moveUI();
+            } finally {
+                movementHandler.postDelayed(movementUpdater, 59991);
+            }
+        }
+    };
+
+    private void moveUI()
     {
-        DateFormat tf = new SimpleDateFormat("h:mm a");
-        DateFormat df = new SimpleDateFormat("EEE MMM d");
-        Date now = Calendar.getInstance().getTime();
-        String timeString = tf.format(now);
-        String dateString = df.format(now).toUpperCase();
-        TimeView.setText(timeString);
-        DateView.setText(dateString);
+        if ((y_coordinate == Max_Y && headedDown) || (y_coordinate == 0 && !headedDown))
+        {
+            ViewGroup.MarginLayoutParams gauge_mlp = (ViewGroup.MarginLayoutParams) CPUGauge.getLayoutParams();
+            ViewGroup.MarginLayoutParams clock_mlp = (ViewGroup.MarginLayoutParams) TimeView.getLayoutParams();
+            // move horizontally
+            if (headedRight)
+            {
+                // move right
+                clock_mlp.rightMargin -= X_Shift;
+                gauge_mlp.leftMargin += X_Shift;
+                x_coordinate += X_Shift;
+            }
+            else
+            {
+                // move left
+                gauge_mlp.leftMargin -= X_Shift;
+                clock_mlp.rightMargin += X_Shift;
+                x_coordinate -= X_Shift;
+            }
+            CPUGauge.setLayoutParams(gauge_mlp);
+            TimeView.setLayoutParams(clock_mlp);
+
+            headedDown = !headedDown;
+
+            if (x_coordinate == Max_X && headedRight) {
+                headedRight = false;
+            }
+            else if (x_coordinate == 0 && !headedRight) {
+                headedRight = true;
+            }
+        }
+        else
+        {
+            //move vertically
+            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) CPUGauge.getLayoutParams();
+            if (headedDown)
+            {
+                // move down
+                mlp.topMargin += Y_Shift;
+                y_coordinate += Y_Shift;
+            }
+            else
+            {
+                // move up
+                mlp.topMargin -= Y_Shift;
+                y_coordinate -= Y_Shift;
+            }
+            CPUGauge.setLayoutParams(mlp);
+        }
+    }
+
+
+    private void updateOSRepeatTask()
+    {
+        OSUpdater.run();
+    }
+
+    Runnable OSUpdater = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                updateOS();
+            } finally {
+                OSHandler.postDelayed(OSUpdater, 6600);
+            }
+        }
+    };
+
+    private void updateOS()
+    {
+        if (isUnresponsive)
+        {
+            hideOSLogo();
+        }
+        else {
+            char OS = data[0].charAt(0);
+            LogoImage.setVisibility(View.VISIBLE);
+            switch (OS) {
+                case 'M':
+                    LogoImage.setImageResource(R.drawable.macos);
+                    break;
+                case 'W':
+                    LogoImage.setImageResource(R.drawable.windows);
+                    break;
+                default:
+                    hideOSLogo();
+            }
+        }
+    }
+
+
+    private void timeRepeatTask() {
+        timeUpdater.run();
     }
 
     Runnable timeUpdater = new Runnable() {
@@ -174,34 +295,20 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void updateOSRepeatTask()
+    private void updateTime()
     {
-        OSUpdater.run();
+        DateFormat tf = new SimpleDateFormat("h:mm a");
+        DateFormat df = new SimpleDateFormat("EEE, MMM d");
+        Date now = Calendar.getInstance().getTime();
+        String timeString = tf.format(now);
+        String dateString = df.format(now).toUpperCase();
+        TimeView.setText(timeString);
+        DateView.setText(dateString);
     }
 
-    Runnable OSUpdater = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                updateOS();
-            } finally {
-                OSHandler.postDelayed(OSUpdater, 7500);
-            }
-        }
-    };
 
-
-    private void timeRepeatTask() {
-        timeUpdater.run();
-    }
-
-    private void setGaugeValue(CustomGauge Gauge, TextView GaugeText, TextView GaugeDescriptor, int val)
-    {
-        Gauge.setValue(val);
-        GaugeText.setText(Integer.toString(val) + "°");
-        Gauge.setVisibility(View.VISIBLE);
-        GaugeText.setVisibility(View.VISIBLE);
-        GaugeDescriptor.setVisibility(View.VISIBLE);
+    private void dataRepeatTask() {
+        dataUpdater.run();
     }
 
     Runnable dataUpdater = new Runnable() {
@@ -211,14 +318,10 @@ public class MainActivity extends AppCompatActivity {
                 readData();
                 onscreenChangeData();
             } finally {
-                dataHandler.postDelayed(dataUpdater, 500);
+                dataHandler.postDelayed(dataUpdater, 2580);
             }
         }
     };
-
-    private void dataRepeatTask() {
-        dataUpdater.run();
-    }
 
     private void readData()
     {
@@ -246,45 +349,58 @@ public class MainActivity extends AppCompatActivity {
             //...or not
             e.printStackTrace();
         }
-
     }
 
     private void onscreenChangeData()
     {
-        char OS = data[0].charAt(0);
-        switch (OS)
+        if (isUnresponsive)
         {
-            case ('!'):
-            case ('Z'):
-                hideGauge(CPUGauge, CPUGaugeText, CPUGaugeDescriptor);
-                hideGauge(GPUGauge, GPUGaugeText, GPUGaugeDescriptor);
-                break;
-            default:
-                int cpuTemp = (int) (Double.parseDouble(data[1]));
-                int gpuTemp = (int) (Double.parseDouble(data[2]));
-                updateTemps(cpuTemp, gpuTemp);
+            hideGauge(CPUGauge, CPUGaugeText, CPUGaugeDescriptor);
+            hideGauge(GPUGauge, GPUGaugeText, GPUGaugeDescriptor);
+        }
+        else
+        {
+            int cpuTemp = (int) (Double.parseDouble(data[1]));
+            int gpuTemp = (int) (Double.parseDouble(data[2]));
+            updateTemps(cpuTemp, gpuTemp);
         }
     }
 
-    private void updateOS()
-    {
-        char OS = data[0].charAt(0);
-        switch (OS)
-        {
-            case 'M':
-                LogoImage.setVisibility(View.VISIBLE);
-                LogoImage.setImageResource(R.drawable.macos);
-                break;
-            case 'W':
-                LogoImage.setVisibility(View.VISIBLE);
-                LogoImage.setImageResource(R.drawable.windows);
-                break;
-            case 'Z':
-                break;
-            case '!':
-            default:
-                hideOSLogo();
+
+    private void checkResponsiveRepeatTask() {
+        isResponsiveUpdater.run();
+    }
+
+    Runnable isResponsiveUpdater = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                checkResponsive();
+            } finally {
+                responsiveHandler.postDelayed(isResponsiveUpdater, 5300);
+            }
         }
+    };
+
+    private void checkResponsive()
+    {
+        //try {
+        int newFileNum = Integer.parseInt(data[3]);
+        isUnresponsive = newFileNum == file_num;
+        file_num = newFileNum;
+        /*} catch (NumberFormatException e) {
+            file_num++;
+        }*/
+    }
+
+
+    private void setGaugeValue(CustomGauge Gauge, TextView GaugeText, TextView GaugeDescriptor, int val)
+    {
+        Gauge.setValue(val);
+        GaugeText.setText(Integer.toString(val) + "°");
+        Gauge.setVisibility(View.VISIBLE);
+        GaugeText.setVisibility(View.VISIBLE);
+        GaugeDescriptor.setVisibility(View.VISIBLE);
     }
 
     private void updateTemps(int cpuTemp, int gpuTemp)

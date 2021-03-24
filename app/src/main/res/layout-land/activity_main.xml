@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context=".MainActivity">
+
+
+    <!--
+    <Button
+        android:id="@+id/testButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:fontFamily="@font/sf_compact_medium"
+        android:onClick="ChangeLogo"
+        android:text="CLICK ME"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+        -->
+
+    <ImageView
+        android:id="@+id/logoImage"
+        android:layout_width="240dp"
+        android:layout_height="230dp"
+        android:src="@drawable/windows"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@+id/gauge2"
+        app:layout_constraintEnd_toStartOf="@+id/timeView"
+        app:layout_constraintStart_toEndOf="@+id/gauge1"
+        app:layout_constraintTop_toTopOf="@+id/gauge1"
+        tools:ignore="ContentDescription" />
+
+    <TextView
+        android:id="@+id/dateView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/sf_compact_medium"
+        android:text="THU, OCT 9"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        app:layout_constraintEnd_toEndOf="@+id/timeView"
+        app:layout_constraintTop_toBottomOf="@+id/timeView" />
+
+    <TextView
+        android:id="@+id/timeView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="232px"
+        android:fontFamily="@font/sf_display"
+        android:text="10:09 AM"
+        android:textColor="#FFFFFF"
+        android:textSize="36dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/logoImage"
+        app:layout_constraintVertical_bias="0.052" />
+
+    <pl.pawelkleczkowski.customgauge.CustomGauge
+        android:id="@+id/gauge1"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="0dp"
+        android:layout_marginLeft="0px"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="10dp"
+        app:gaugeEndValue="100"
+        app:gaugePointEndColor="#EEEEEE"
+        app:gaugePointStartColor="#EEEEEE"
+        app:gaugeStartAngle="135"
+        app:gaugeStartValue="0"
+        app:gaugeStrokeCap="ROUND"
+        app:gaugeStrokeColor="#393939"
+        app:gaugeStrokeWidth="9dp"
+        app:gaugeSweepAngle="270"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/gauge1text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/sf_compact_medium"
+        android:text="10°"
+        android:textColor="#FFFFFF"
+        android:textSize="44sp"
+        app:layout_constraintBottom_toBottomOf="@+id/gauge1"
+        app:layout_constraintEnd_toEndOf="@+id/gauge1"
+        app:layout_constraintStart_toStartOf="@+id/gauge1"
+        app:layout_constraintTop_toTopOf="@+id/gauge1" />
+
+    <TextView
+        android:id="@+id/guage1descriptor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/sf_compact_medium"
+        android:text="CPU"
+        android:textColor="#FFFFFF"
+        android:textSize="22dp"
+        app:layout_constraintBottom_toBottomOf="@+id/gauge1"
+        app:layout_constraintEnd_toEndOf="@+id/gauge1"
+        app:layout_constraintStart_toStartOf="@+id/gauge1" />
+
+    <pl.pawelkleczkowski.customgauge.CustomGauge
+        android:id="@+id/gauge2"
+        android:layout_width="130dp"
+        android:layout_height="130dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="24dp"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="10dp"
+        app:gaugeEndValue="100"
+        app:gaugePointEndColor="#EEEEEE"
+        app:gaugePointStartColor="#EEEEEE"
+        app:gaugeStartAngle="135"
+        app:gaugeStartValue="0"
+        app:gaugeStrokeCap="ROUND"
+        app:gaugeStrokeColor="#393939"
+        app:gaugeStrokeWidth="9dp"
+        app:gaugeSweepAngle="270"
+        app:layout_constraintEnd_toEndOf="@+id/gauge1"
+        app:layout_constraintStart_toStartOf="@+id/gauge1"
+        app:layout_constraintTop_toBottomOf="@+id/gauge1" />
+
+    <TextView
+        android:id="@+id/gauge2text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/sf_compact_medium"
+        android:text="20°"
+        android:textColor="#FFFFFF"
+        android:textSize="44sp"
+        app:layout_constraintBottom_toBottomOf="@+id/gauge2"
+        app:layout_constraintEnd_toEndOf="@+id/gauge2"
+        app:layout_constraintStart_toStartOf="@+id/gauge2"
+        app:layout_constraintTop_toTopOf="@+id/gauge2" />
+
+    <TextView
+        android:id="@+id/guage2descriptor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/sf_compact_medium"
+        android:text="GPU"
+        android:textColor="#FFFFFF"
+        android:textSize="22dp"
+        app:layout_constraintBottom_toBottomOf="@+id/gauge2"
+        app:layout_constraintEnd_toEndOf="@+id/gauge2"
+        app:layout_constraintStart_toStartOf="@+id/gauge2" />
+
+
+    <!--
+<TextClock
+    android:id="@+id/timeView"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="5dp"
+    android:layout_marginTop="350dp"
+    android:format12Hour="hh:mm a"
+    android:textColor="#FFFFFF"
+    android:textSize="42sp"
+    android:fontFamily="@font/sf_display"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.0"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+    -->
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
