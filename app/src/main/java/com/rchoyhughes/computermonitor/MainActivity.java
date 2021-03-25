@@ -61,9 +61,9 @@ public class MainActivity extends AppCompatActivity {
     private boolean headedDown;
     private int x_coordinate;
     private int y_coordinate;
-    private static final int X_Shift = 8;
+    private static final int X_Shift = 6;
     private static final int Y_Shift = 4;
-    private static final int Max_X = 232;
+    private static final int Max_X = 228;
     private static final int Max_Y = 156;
 
     @Override
